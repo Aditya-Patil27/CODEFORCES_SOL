@@ -1,0 +1,78 @@
+#include<iostream>
+#include<vector>
+#include<unordered_map>
+using namespace std;
+
+void solve() {
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    for(int i = 0; i < n; i++) {
+        cin >> a[i];
+    }
+    
+    // Initial state
+    unordered_map<int, int> freq;
+    for(int x : a) {
+        freq[x]++;
+    }
+    int initial_distinct = freq.size();
+    int initial_score = n - initial_distinct;
+    
+    int best_score = initial_score;
+    int best_length = n;
+    int best_l = 0, best_r = 0;
+    
+    // Sliding window
+    unordered_map<int, int> window_freq = freq;
+    int l = 0;
+    
+    for(int r = 0; r < n; r++) {
+        // Remove current element from remaining frequencies
+        window_freq[a[r]]--;
+        if(window_freq[a[r]] == 0) {
+            window_freq.erase(a[r]);
+        }
+        
+        // Shrink window from left if needed
+        while(l <= r && (n - (r - l + 1)) - window_freq.size() < best_score) {
+            window_freq[a[l]]++;
+            l++;
+        }
+        
+        int curr_length = n - (r - l + 1);
+        int curr_distinct = window_freq.size();
+        int curr_score = curr_length - curr_distinct;
+        
+        if(curr_score > best_score || 
+           (curr_score == best_score && curr_length < best_length)) {
+            best_score = curr_score;
+            best_length = curr_length;
+            best_l = l + 1;
+            best_r = r + 1;
+        }
+    }
+    
+    // Handle special cases
+    if(n == 1) {
+        cout << "1 1\n";  // Must remove something for n=1
+    }
+    else if(best_l == 0 || (best_score == initial_score && best_length == n)) {
+        cout << "0\n";    // No removal needed if initial state is optimal
+    }
+    else {
+        cout << best_l << " " << best_r << "\n";
+    }
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int t;
+    cin >> t;
+    while(t--) {
+        solve();
+    }
+    return 0;
+}
